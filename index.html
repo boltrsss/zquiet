@@ -4,35 +4,18 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  // Optionally, check if the gp-lite-youtube-embed script is loaded.
-  // If not, you can dynamically load it. Replace the URL with the actual script URL if needed.
-  if (typeof gpLiteYoutubeEmbed === "undefined") {
-    console.log("gp-lite-youtube-embed not found, dynamically loading script.");
-    var script = document.createElement("script");
-    script.src = "https://cdn.example.com/gp-lite-youtube-embed.js"; // replace with the actual script URL
-    script.onload = function () {
-      console.log("gp-lite-youtube-embed loaded.");
-    };
-    document.head.appendChild(script);
-  } else {
-    console.log("gp-lite-youtube-embed is already loaded.");
-  }
-
-  // Find all gp-lite-youtube-embed elements and attach click event listeners.
+  // Initialize gp-lite-youtube-embed elements
   var embeds = document.querySelectorAll("gp-lite-youtube-embed");
   embeds.forEach(function (embed) {
     embed.addEventListener("click", function () {
-      // Parse the gp-data attribute.
       var data = JSON.parse(embed.getAttribute("gp-data"));
       if (data && data.iframeSrc) {
-        // Create an iframe element.
         var iframe = document.createElement("iframe");
         iframe.src = data.iframeSrc;
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
         iframe.setAttribute("allowfullscreen", "");
-        
-        // Clear the embed's content and append the iframe.
+        // Replace content with the iframe to load the video
         embed.innerHTML = "";
         embed.appendChild(iframe);
       } else {
@@ -40,6 +23,46 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  // Carousel navigation functionality
+  var carousel = document.getElementById("gp-carousel-gKv8RAxRgF-template--17743085928633__gp_section_550624510853382960");
+  if (carousel) {
+    var items = carousel.querySelectorAll(".gem-slider-item");
+    var currentIndex = 0;
+
+    // Function to show the slide at the given index
+    function showSlide(index) {
+      items.forEach(function (item, i) {
+        // Hide all items except the current one
+        item.style.display = (i === index) ? "block" : "none";
+      });
+    }
+    // Initially display the first slide
+    showSlide(currentIndex);
+
+    // Create and style navigation buttons (adjust styles as needed)
+    var prevBtn = document.createElement("button");
+    prevBtn.innerText = "Prev";
+    prevBtn.classList.add("carousel-prev");
+    var nextBtn = document.createElement("button");
+    nextBtn.innerText = "Next";
+    nextBtn.classList.add("carousel-next");
+
+    // Append the buttons to the carousel container
+    carousel.appendChild(prevBtn);
+    carousel.appendChild(nextBtn);
+
+    // Add event listeners to navigate between slides
+    prevBtn.addEventListener("click", function () {
+      currentIndex = (currentIndex === 0) ? items.length - 1 : currentIndex - 1;
+      showSlide(currentIndex);
+    });
+
+    nextBtn.addEventListener("click", function () {
+      currentIndex = (currentIndex + 1) % items.length;
+      showSlide(currentIndex);
+    });
+  }
 });
 
 
