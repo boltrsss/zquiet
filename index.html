@@ -420,32 +420,39 @@
 
 
 
-
-
-
 <script>
 
-	document.addEventListener("DOMContentLoaded", function () {
-  // Initialize gp-lite-youtube-embed click functionality for video play
-  var embeds = document.querySelectorAll("gp-lite-youtube-embed");
+
+document.addEventListener("DOMContentLoaded", function () {
+  // Select all gp-lite-youtube-embed elements
+  const embeds = document.querySelectorAll("gp-lite-youtube-embed");
+
+  if (!embeds.length) {
+    console.error("No gp-lite-youtube-embed elements found.");
+    return;
+  }
+
+  // Add click listener to each embed element to load the video
   embeds.forEach(function (embed) {
     embed.addEventListener("click", function () {
+      let gpData;
       try {
-        var data = JSON.parse(embed.getAttribute("gp-data"));
-      } catch(e) {
-        console.error("gp-data attribute is not valid JSON.");
+        gpData = JSON.parse(embed.getAttribute("gp-data"));
+      } catch (error) {
+        console.error("Error parsing gp-data:", error);
         return;
       }
-      if (data && data.iframeSrc) {
-        var iframe = document.createElement("iframe");
-        iframe.src = data.iframeSrc;
+      if (gpData && gpData.iframeSrc) {
+        const iframe = document.createElement("iframe");
+        iframe.src = gpData.iframeSrc;
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute(
           "allow",
           "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         );
         iframe.setAttribute("allowfullscreen", "");
-        // Replace the content of the embed with the iframe to load the video
+
+        // Clear any existing content and inject the iframe
         embed.innerHTML = "";
         embed.appendChild(iframe);
       } else {
@@ -453,48 +460,11 @@
       }
     });
   });
-
-  // Carousel navigation functionality
-  var carousel = document.getElementById("gp-carousel-gKv8RAxRgF-template--17743085928633__gp_section_550624510853382960");
-  if (carousel) {
-    var items = carousel.querySelectorAll(".gem-slider-item");
-    var currentIndex = 0;
-
-    // Function to show only the active slide and hide others
-    function showSlide(index) {
-      items.forEach(function (item, idx) {
-        // You can add transitions or animations here as needed
-        item.style.display = (idx === index) ? "block" : "none";
-      });
-    }
-    
-    // Initially display the first slide
-    showSlide(currentIndex);
-
-    // Create previous and next buttons
-    var prevBtn = document.createElement("button");
-    prevBtn.innerText = "Prev";
-    prevBtn.style.position = "absolute"; // Position as desired
-    prevBtn.style.left = "10px";
-    prevBtn.style.top = "50%";
-
-    var nextBtn = document.createElement("button");
-    nextBtn.innerText = "Next";
-    nextBtn.style.position = "absolute"; // Position as desired
-    nextBtn.style.right = "10px";
-    nextBtn.style.top = "50%";
-
-    // Append the buttons to the carousel container
-    carousel.appendChild(prevBtn);
-    carousel.appendChild(nextBtn);
-
-    // Add event listeners
-
-	</script>
+});
 
 	  
 
-
+</script>
 
 
 
