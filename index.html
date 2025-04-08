@@ -2,71 +2,7 @@
 <html class="no-js" lang="en">
   <head>
 
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-  // Initialize gp-lite-youtube-embed elements
-  var embeds = document.querySelectorAll("gp-lite-youtube-embed");
-  embeds.forEach(function (embed) {
-    embed.addEventListener("click", function () {
-      var data = JSON.parse(embed.getAttribute("gp-data"));
-      if (data && data.iframeSrc) {
-        var iframe = document.createElement("iframe");
-        iframe.src = data.iframeSrc;
-        iframe.setAttribute("frameborder", "0");
-        iframe.setAttribute("allow", "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture");
-        iframe.setAttribute("allowfullscreen", "");
-        // Replace content with the iframe to load the video
-        embed.innerHTML = "";
-        embed.appendChild(iframe);
-      } else {
-        console.error("No valid iframeSrc found in gp-data attribute.");
-      }
-    });
-  });
-
-  // Carousel navigation functionality
-  var carousel = document.getElementById("gp-carousel-gKv8RAxRgF-template--17743085928633__gp_section_550624510853382960");
-  if (carousel) {
-    var items = carousel.querySelectorAll(".gem-slider-item");
-    var currentIndex = 0;
-
-    // Function to show the slide at the given index
-    function showSlide(index) {
-      items.forEach(function (item, i) {
-        // Hide all items except the current one
-        item.style.display = (i === index) ? "block" : "none";
-      });
-    }
-    // Initially display the first slide
-    showSlide(currentIndex);
-
-    // Create and style navigation buttons (adjust styles as needed)
-    var prevBtn = document.createElement("button");
-    prevBtn.innerText = "Prev";
-    prevBtn.classList.add("carousel-prev");
-    var nextBtn = document.createElement("button");
-    nextBtn.innerText = "Next";
-    nextBtn.classList.add("carousel-next");
-
-    // Append the buttons to the carousel container
-    carousel.appendChild(prevBtn);
-    carousel.appendChild(nextBtn);
-
-    // Add event listeners to navigate between slides
-    prevBtn.addEventListener("click", function () {
-      currentIndex = (currentIndex === 0) ? items.length - 1 : currentIndex - 1;
-      showSlide(currentIndex);
-    });
-
-    nextBtn.addEventListener("click", function () {
-      currentIndex = (currentIndex + 1) % items.length;
-      showSlide(currentIndex);
-    });
-  }
-});
-
-
-</script>	  
+  
 	  
 
 
@@ -487,7 +423,308 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
+<script>
+    (function(){
+       function addMoneyTag(mutations, observer){
+        let currencyCookie = getCookieCore("transcy_currency");
+          if(!window.ShopifyTC?.shopifyCurrency?.price_currency || !currencyCookie || currencyCookie == window.ShopifyTC?.shopifyCurrency?.currency){
+            return;
+          }
+          let shopifyCurrencyRegex = buildXPathQuery(
+          window.ShopifyTC.shopifyCurrency.price_currency
+          );
+          let currencyRegex = buildCurrencyRegex(window.ShopifyTC.shopifyCurrency.price_currency)
+          let tempTranscy = document.evaluate(shopifyCurrencyRegex, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+          for (let iTranscy = 0; iTranscy < tempTranscy.snapshotLength; iTranscy++) {
+                let elTranscy = tempTranscy.snapshotItem(iTranscy);
+                if(elTranscy.innerHTML && 
+                   !elTranscy.classList.contains('transcy-money') && (typeof transcy_ignoreConvertPrice == "undefined" ||
+                   !transcy_ignoreConvertPrice?.some(className => elTranscy.classList?.contains(className))) && elTranscy?.childNodes?.length == 1){
+                   elTranscy.classList.add('transcy-money');
+                   let innerHTML = replaceMatches(elTranscy?.textContent,currencyRegex);
+                    elTranscy.innerHTML = innerHTML;
+                   if(!innerHTML.includes("tc-money")){
+                    elTranscy.classList.add('notranslate')
+                   }
+                }
+          }
+        }
 
+        function logChangesTranscy(mutations, observer) {
+            const xpathQuery = `
+                //*[text()[contains(.,"•tc")]] |
+                //*[text()[contains(.,"tc")]] |
+                //*[text()[contains(.,"transcy")]] |
+                //textarea[@placeholder[contains(.,"transcy")]] |
+                //textarea[@placeholder[contains(.,"tc")]] |
+                //select[@placeholder[contains(.,"transcy")]] |
+                //select[@placeholder[contains(.,"tc")]] |
+                //input[@placeholder[contains(.,"tc")]] |
+                //input[@value[contains(.,"tc")]] |
+                //input[@value[contains(.,"transcy")]] |
+                //*[text()[contains(.,"TC")]] |
+                //textarea[@placeholder[contains(.,"TC")]] |
+                //select[@placeholder[contains(.,"TC")]] |
+                //input[@placeholder[contains(.,"TC")]] |
+                //input[@value[contains(.,"TC")]]
+            `;
+            let tempTranscy = document.evaluate(xpathQuery, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+            for (let iTranscy = 0; iTranscy < tempTranscy.snapshotLength; iTranscy++) {
+                let elTranscy = tempTranscy.snapshotItem(iTranscy);
+                let innerHtmlTranscy = elTranscy?.innerHTML ? elTranscy.innerHTML : "";
+                if(innerHtmlTranscy && !["SCRIPT", "LINK", "STYLE"].includes(elTranscy.nodeName)){
+                    const textToReplace = [
+                        '&lt;•tc&gt;', '&lt;/•tc&gt;', '&lt;tc&gt;', '&lt;/tc&gt;', 
+                        '&lt;transcy&gt;', '&lt;/transcy&gt;', '&amp;lt;tc&amp;gt;', 
+                        '&amp;lt;/tc&amp;gt;', '&lt;TRANSCY&gt;', '&lt;/TRANSCY&gt;', 
+                        '&lt;TC&gt;', '&lt;/TC&gt;'
+                    ];
+                    let containsTag = textToReplace.some(tag => innerHtmlTranscy.includes(tag));
+                    if (containsTag) {
+                        textToReplace.forEach(tag => {
+                            innerHtmlTranscy = innerHtmlTranscy.replaceAll(tag, '');
+                        });
+                        elTranscy.innerHTML = innerHtmlTranscy;
+                        elTranscy.setAttribute('translate', 'no');
+                    }
+
+                    const tagsToReplace = ['<•tc>', '</•tc>', '<tc>', '</tc>', '<transcy>', '</transcy>', '<TC>', '</TC>', '<TRANSCY>', '</TRANSCY>'];
+                    if (tagsToReplace.some(tag => innerHtmlTranscy.includes(tag))) {
+                        innerHtmlTranscy = innerHtmlTranscy.replace(/<(|\/)transcy>|<(|\/)tc>|<(|\/)•tc>/gi, "");
+                        elTranscy.innerHTML = innerHtmlTranscy;
+                        elTranscy.setAttribute('translate', 'no');
+                    }
+                }
+                if (["INPUT"].includes(elTranscy.nodeName)) {
+                    let valueInputTranscy = elTranscy.value.replaceAll("&lt;tc&gt;", "").replaceAll("&lt;/tc&gt;", "").replace(/<(|\/)transcy>|<(|\/)tc>/gi, "");
+                    elTranscy.value = valueInputTranscy
+                }
+
+                if(["INPUT","SELECT","TEXTAREA"].includes(elTranscy.nodeName)){
+                    elTranscy.placeholder = elTranscy.placeholder.replaceAll("&lt;tc&gt;", "").replaceAll("&lt;/tc&gt;", "").replace(/<(|\/)transcy>|<(|\/)tc>/gi, "");
+                }
+            }
+            addMoneyTag(mutations, observer)
+        }
+        const observerOptionsTranscy = {
+          subtree : true,
+          childList: true
+        };
+        const observerTranscy = new MutationObserver(logChangesTranscy);
+        observerTranscy.observe(document.documentElement, observerOptionsTranscy);
+    })();
+
+    const replaceMatches = (content,currencyRegex) => {
+        let arrCurrencies = content.match(currencyRegex);
+        
+        if(arrCurrencies?.length && content === arrCurrencies[0]){
+            return content;
+        }
+
+        return (
+            arrCurrencies?.reduce((string, oldVal, index) => {
+                const hasSpaceBefore = string.match(new RegExp(`\\s${oldVal}`));
+                const hasSpaceAfter = string.match(new RegExp(`${oldVal}\\s`));
+                let eleCurrencyConvert = `<tc-money translate="no">${arrCurrencies[index]}</tc-money>`;
+                if (hasSpaceBefore) eleCurrencyConvert = ` ${eleCurrencyConvert}`;
+                if (hasSpaceAfter) eleCurrencyConvert = `${eleCurrencyConvert} `;
+                return string?.replace(oldVal, eleCurrencyConvert);
+            }, content) || content
+        );
+    };
+
+    const unwrapCurrencySpan = (text) => {
+        return text.replace(/<span[^>]*>(.*?)<\/span>/gi, "$1");
+    };
+
+    const buildCurrencyRegex = (text) => {
+        let numberPattern = "\\d+(?:[.,]\\d+)*(?:[.,]\\d+)?(?:\\s?\\d+)?"; // Chỉ tối đa 1 khoảng trắng
+        let textWithoutCurrencySpan = unwrapCurrencySpan(text);
+        let symbolsAndCodes = textWithoutCurrencySpan
+            .trim()
+            .replace(new RegExp(numberPattern, "g"), "")
+            .split(/\s+/) // Loại bỏ khoảng trắng dư thừa
+            .filter((el) => el);
+
+        if (!Array.isArray(symbolsAndCodes) || symbolsAndCodes.length === 0) {
+            throw new Error("symbolsAndCodes must be a non-empty array.");
+        }
+
+        const escape = (str) => str.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+        const escapedSymbolsAndCodes = symbolsAndCodes.map(escape);
+
+        // Tạo các pattern khớp với số có đơn vị tiền tệ
+        const patterns = [
+            replaceAmount(text),
+            `${numberPattern}\\s?(?:${escapedSymbolsAndCodes.join("|")})`, // 100$ hoặc 100 $
+            `(?:${escapedSymbolsAndCodes.join("|")})\\s?${numberPattern}`, // $100 hoặc $ 100
+            `(?:${escapedSymbolsAndCodes.join("|")})\\s?${numberPattern}\\s?(?:${escapedSymbolsAndCodes.join("|")})?`, // $100 USD hoặc $ 100 USD
+            `${numberPattern}(?:\\s?(?:${escapedSymbolsAndCodes.join("|")}))?`, // 100 USD hoặc 100USD
+            `(?:${escapedSymbolsAndCodes.join("|")})\\s?${numberPattern}\\s?(?:${escapedSymbolsAndCodes.join("|")})` // USD 50 $ hoặc $ 50 USD
+        ];
+
+        return new RegExp(`(${patterns.join("|")})`, "g");
+    };
+
+    const getCookieCore = function(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for (var i = 0; i < ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+        }
+        return null;
+    }
+
+    const buildXPathQuery = (text) => {
+        let numberPattern = "\\d+(?:[.,]\\d+)*"; // Bỏ `matches()`
+        let symbolAndCodes = text.replace(/<span[^>]*>(.*?)<\/span>/gi, "$1")
+            .trim()
+            .replace(new RegExp(numberPattern, "g"), "")
+            .split(" ")
+            ?.filter((el) => el);
+
+        if (!symbolAndCodes || !Array.isArray(symbolAndCodes) || symbolAndCodes.length === 0) {
+            throw new Error("symbolAndCodes must be a non-empty array.");
+        }
+
+        // Escape ký tự đặc biệt trong XPath
+        const escapeXPath = (str) => str.replace(/(["'])/g, "\\$1");
+
+        // Danh sách thẻ HTML cần tìm
+        const allowedTags = ["div", "span", "p", "strong", "b", "h1", "h2", "h3", "h4", "h5", "h6", "td", "li","font","dd", 'a', 'font'];
+
+        // Tạo điều kiện contains() cho từng symbol hoặc code
+        const conditions = symbolAndCodes
+            .map((symbol) =>
+            `(contains(text(), "${escapeXPath(symbol)}") and (contains(text(), "0") or contains(text(), "1") or contains(text(), "2") or contains(text(), "3") or contains(text(), "4") or contains(text(), "5") or contains(text(), "6") or contains(text(), "7") or contains(text(), "8") or contains(text(), "9")) )`
+            )
+            .join(" or ");
+
+        // Tạo XPath Query (Chỉ tìm trong các thẻ HTML, không tìm trong input)
+        const xpathQuery = allowedTags
+            .map((tag) => `//${tag}[${conditions}]`)
+            .join(" | ");
+
+        return xpathQuery;
+        };
+
+    const replaceAmount = (text) => {
+        let numberPattern = "\\d+(?:[.,]\\d+)*(?:[.,]\\d+)?";
+        let textWithoutCurrencySpan = unwrapCurrencySpan(text);
+        let symbolAndCodes = textWithoutCurrencySpan
+            .trim()
+            .replace(new RegExp(numberPattern, "g"), "")
+            .split(" ")
+            ?.filter((el) => el);
+
+        const currencyPattern = symbolAndCodes
+            .map((c) => c.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&")) // Escape ký tự đặc biệt
+            .join("|");
+
+        let likeCurrencyRegex = `(?:${currencyPattern})\\s*${numberPattern}\\s*(?:${currencyPattern})|${numberPattern}\\s*(?:${currencyPattern})`;
+
+        return `${textWithoutCurrencySpan
+            .trim()
+            .replace(
+            new RegExp(numberPattern, "g"),
+            `${numberPattern.replace(/\./g, "\\.")}`
+            )}|${likeCurrencyRegex}`;
+    };
+
+
+    window.ShopifyTC = {};
+    ShopifyTC.shop = "honexcompany.com";
+    ShopifyTC.locale = "en";
+    ShopifyTC.currency = {"active":"USD", "rate":""};
+    ShopifyTC.country = "TW";
+    ShopifyTC.designMode = false;
+    ShopifyTC.theme = {};
+    ShopifyTC.cdnHost = "";
+    ShopifyTC.routes = {};
+    ShopifyTC.routes.root = "/";
+    ShopifyTC.store_id = 65133019321;
+    ShopifyTC.page_type = "article";
+    ShopifyTC.resource_id = "";
+    ShopifyTC.resource_description = "";
+    switch (ShopifyTC.page_type) {
+        case "product":
+            ShopifyTC.resource_id = null;
+            ShopifyTC.resource_description = null
+            break;
+        case "article":
+            ShopifyTC.resource_id = 562364547257;
+            ShopifyTC.resource_description = ""
+            break;
+        case "blog":
+            ShopifyTC.resource_id = 87688020153;
+            break;
+        case "collection":
+            ShopifyTC.resource_id = null;
+            ShopifyTC.resource_description = null
+            break;
+        case "policy":
+            ShopifyTC.resource_id = null;
+            ShopifyTC.resource_description = null
+            break;
+        case "page":
+            ShopifyTC.resource_id = null;
+            ShopifyTC.resource_description = null
+            break;
+        default:
+            break;
+    }
+
+    window.ShopifyTC.shopifyCurrency={
+        "price": `0.01`,
+        "price_currency": `<span class=transcy-money>$0.01 USD</span>`,
+        "currency": `USD`
+    }
+
+
+    if(typeof(transcy_appEmbed) == 'undefined'){
+        transcy_switcherVersion = "1743678444";
+        transcy_productMediaVersion = "";
+        transcy_collectionMediaVersion = "";
+        transcy_otherMediaVersion = "";
+        transcy_productId = "";
+        transcy_shopName = "Honex";
+        transcy_currenciesPaymentPublish = [];
+        transcy_curencyDefault = "USD";transcy_currenciesPaymentPublish.push("USD");
+        transcy_shopifyLocales = [{"shop_locale":{"locale":"en","enabled":true,"primary":true,"published":true}}];
+        transcy_moneyFormat = "<span class=transcy-money>${{amount}}</span>";
+
+        function domLoadedTranscy () {
+            let cdnScriptTC = typeof(transcy_cdn) != 'undefined' ? (transcy_cdn+'/transcy.js') : "https://cdn.shopify.com/extensions/f124c57b-e7ab-4e4e-bcda-be3e554811ef/transcy-220/assets/transcy.js";
+            let cdnLinkTC = typeof(transcy_cdn) != 'undefined' ? (transcy_cdn+'/transcy.css') :  "https://cdn.shopify.com/extensions/f124c57b-e7ab-4e4e-bcda-be3e554811ef/transcy-220/assets/transcy.css";
+            let scriptTC = document.createElement('script');
+            scriptTC.type = 'text/javascript';
+            scriptTC.defer = true;
+            scriptTC.src = cdnScriptTC;
+            scriptTC.id = "transcy-script";
+            document.head.appendChild(scriptTC);
+
+            let linkTC = document.createElement('link');
+            linkTC.rel = 'stylesheet'; 
+            linkTC.type = 'text/css';
+            linkTC.href = cdnLinkTC;
+            linkTC.id = "transcy-style";
+            document.head.appendChild(linkTC); 
+        }
+
+
+        if (document.readyState === 'interactive' || document.readyState === 'complete') {
+            domLoadedTranscy();
+        } else {
+            document.addEventListener("DOMContentLoaded", function () {
+                domLoadedTranscy();
+            });
+        }
+    }
+</script>
+
+	  
 
 
 
