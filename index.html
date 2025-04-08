@@ -424,35 +424,30 @@
 
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Select all gp-lite-youtube-embed elements
-  const embeds = document.querySelectorAll("gp-lite-youtube-embed");
-
-  if (!embeds.length) {
-    console.error("No gp-lite-youtube-embed elements found.");
-    return;
-  }
-
-  // Add click listener to each embed element to load the video
+  // Select all gp-lite-youtube-embed elements and store their original HTML
+  var embeds = document.querySelectorAll("gp-lite-youtube-embed");
   embeds.forEach(function (embed) {
+    embed.dataset.originalHtml = embed.innerHTML; // save original content
+
+    // Add click listener to load the video when clicked
     embed.addEventListener("click", function () {
-      let gpData;
+      var data;
       try {
-        gpData = JSON.parse(embed.getAttribute("gp-data"));
+        data = JSON.parse(embed.getAttribute("gp-data"));
       } catch (error) {
         console.error("Error parsing gp-data:", error);
         return;
       }
-      if (gpData && gpData.iframeSrc) {
-        const iframe = document.createElement("iframe");
-        iframe.src = gpData.iframeSrc;
+      if (data && data.iframeSrc) {
+        var iframe = document.createElement("iframe");
+        iframe.src = data.iframeSrc;
         iframe.setAttribute("frameborder", "0");
         iframe.setAttribute(
           "allow",
           "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         );
         iframe.setAttribute("allowfullscreen", "");
-
-        // Clear any existing content and inject the iframe
+        // Replace the content with the iframe to play the video
         embed.innerHTML = "";
         embed.appendChild(iframe);
       } else {
@@ -460,9 +455,43 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
-});
 
-	  
+  // Carousel navigation functionality
+  var carousel = document.getElementById("gp-carousel-gKv8RAxRgF-template--17743085928633__gp_section_550624510853382960");
+  if (carousel) {
+    var items = carousel.querySelectorAll(".gem-slider-item");
+    var currentIndex = 0;
+
+    // Function to show a specific slide and reset videos on others
+    function showSlide(index) {
+      items.forEach(function (item, idx) {
+        if (idx === index) {
+          item.style.display = "block";
+        } else {
+          item.style.display = "none";
+          // Reset the video in this slide by restoring its original HTML
+          var embed = item.querySelector("gp-lite-youtube-embed");
+          if (embed && embed.dataset.originalHtml) {
+            embed.innerHTML = embed.dataset.originalHtml;
+          }
+        }
+      });
+    }
+
+    // Initially display the first slide
+    showSlide(currentIndex);
+
+    // Create navigation buttons
+    var prevBtn = document.createElement("button");
+    prevBtn.innerText = "Prev";
+    prevBtn.style.position = "absolute";
+    prevBtn.style.left = "10px";
+    prevBtn.style.top = "50%";
+
+    var nextBtn = document.createElement("button");
+    nextBtn.innerText = "Next";
+    nextBtn.style.position = "
+
 
 </script>
 
