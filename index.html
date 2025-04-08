@@ -424,18 +424,22 @@
 
 
 document.addEventListener("DOMContentLoaded", function () {
-  // Select all gp-lite-youtube-embed elements and store their original HTML
+  // Store original HTML for each video embed
   var embeds = document.querySelectorAll("gp-lite-youtube-embed");
   embeds.forEach(function (embed) {
-    embed.dataset.originalHtml = embed.innerHTML; // save original content
-
-    // Add click listener to load the video when clicked
+    // Save the original innerHTML so we can reset it later
+    embed.dataset.originalHtml = embed.innerHTML;
+    
+    // Add click listener to load the video on demand
     embed.addEventListener("click", function () {
+      // If an iframe is already loaded, do nothing
+      if (embed.querySelector("iframe")) return;
+      
       var data;
       try {
         data = JSON.parse(embed.getAttribute("gp-data"));
-      } catch (error) {
-        console.error("Error parsing gp-data:", error);
+      } catch (e) {
+        console.error("Error parsing gp-data JSON:", e);
         return;
       }
       if (data && data.iframeSrc) {
@@ -447,7 +451,7 @@ document.addEventListener("DOMContentLoaded", function () {
           "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         );
         iframe.setAttribute("allowfullscreen", "");
-        // Replace the content with the iframe to play the video
+        // Replace embed content with the iframe to play the video
         embed.innerHTML = "";
         embed.appendChild(iframe);
       } else {
@@ -458,39 +462,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Carousel navigation functionality
   var carousel = document.getElementById("gp-carousel-gKv8RAxRgF-template--17743085928633__gp_section_550624510853382960");
-  if (carousel) {
-    var items = carousel.querySelectorAll(".gem-slider-item");
-    var currentIndex = 0;
+  if (!carousel) return;
 
-    // Function to show a specific slide and reset videos on others
-    function showSlide(index) {
-      items.forEach(function (item, idx) {
-        if (idx === index) {
-          item.style.display = "block";
-        } else {
-          item.style.display = "none";
-          // Reset the video in this slide by restoring its original HTML
-          var embed = item.querySelector("gp-lite-youtube-embed");
-          if (embed && embed.dataset.originalHtml) {
-            embed.innerHTML = embed.dataset.originalHtml;
-          }
+  var items = carousel.querySelectorAll(".gem-slider-item");
+  var currentIndex = 0;
+
+  // Function to display only the active slide and reset others
+  function showSlide(index) {
+    items.forEach(function (item, idx) {
+      if (idx === index) {
+        item.style.display = "block";
+      } else {
+        item.style.display = "none";
+        // Reset the video embed to its original state
+        var embed = item.querySelector("gp-lite-youtube-embed");
+        if (embed && embed.dataset.originalHtml) {
+          embed.innerHTML = embed.dataset.originalHtml;
         }
-      });
-    }
+      }
+    });
+  }
 
-    // Initially display the first slide
+  // Initially display the first slide
+  showSlide(currentIndex);
+
+  // Create navigation buttons for the carousel
+  var prevBtn = document.createElement("button");
+  prevBtn.innerText = "Prev";
+  prevBtn.style.position = "absolute";
+  prevBtn.style.left = "10px";
+  prevBtn.style.top = "50%";
+
+  var nextBtn = document.createElement("button");
+  nextBtn.innerText = "Next";
+  nextBtn.style.position = "absolute";
+  nextBtn.style.right = "10px";
+  nextBtn.style.top = "50%";
+
+  // Append buttons to the carousel container
+  carousel.appendChild(prevBtn);
+  carousel.appendChild(nextBtn);
+
+  // Event listeners for navigation buttons
+  prevBtn.addEventListener("click", function () {
+    currentIndex = (currentIndex === 0) ? items.length - 1 : currentIndex - 1;
     showSlide(currentIndex);
+  });
 
-    // Create navigation buttons
-    var prevBtn = document.createElement("button");
-    prevBtn.innerText = "Prev";
-    prevBtn.style.position = "absolute";
-    prevBtn.style.left = "10px";
-    prevBtn.style.top = "50%";
+  nextBtn.addEventListener("click", function () {
+    currentIndex = (currentIndex + 1) % items.length;
+    showSlide(currentIndex);
+  });
+});
 
-    var nextBtn = document.createElement("button");
-    nextBtn.innerText = "Next";
-    nextBtn.style.position = "
 
 
 </script>
