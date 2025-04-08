@@ -423,7 +423,74 @@
 
 
 
-<script class="gps-link" delay ="https://d2ls1pfffhvy22.cloudfront.net/assets-v2/gp-lite-youtube-embed.js?v=1742304773428" defer="defer"></script>
+<script>
+
+	document.addEventListener("DOMContentLoaded", function () {
+  // Initialize gp-lite-youtube-embed click functionality for video play
+  var embeds = document.querySelectorAll("gp-lite-youtube-embed");
+  embeds.forEach(function (embed) {
+    embed.addEventListener("click", function () {
+      try {
+        var data = JSON.parse(embed.getAttribute("gp-data"));
+      } catch(e) {
+        console.error("gp-data attribute is not valid JSON.");
+        return;
+      }
+      if (data && data.iframeSrc) {
+        var iframe = document.createElement("iframe");
+        iframe.src = data.iframeSrc;
+        iframe.setAttribute("frameborder", "0");
+        iframe.setAttribute(
+          "allow",
+          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        );
+        iframe.setAttribute("allowfullscreen", "");
+        // Replace the content of the embed with the iframe to load the video
+        embed.innerHTML = "";
+        embed.appendChild(iframe);
+      } else {
+        console.error("No valid iframeSrc found in gp-data attribute.");
+      }
+    });
+  });
+
+  // Carousel navigation functionality
+  var carousel = document.getElementById("gp-carousel-gKv8RAxRgF-template--17743085928633__gp_section_550624510853382960");
+  if (carousel) {
+    var items = carousel.querySelectorAll(".gem-slider-item");
+    var currentIndex = 0;
+
+    // Function to show only the active slide and hide others
+    function showSlide(index) {
+      items.forEach(function (item, idx) {
+        // You can add transitions or animations here as needed
+        item.style.display = (idx === index) ? "block" : "none";
+      });
+    }
+    
+    // Initially display the first slide
+    showSlide(currentIndex);
+
+    // Create previous and next buttons
+    var prevBtn = document.createElement("button");
+    prevBtn.innerText = "Prev";
+    prevBtn.style.position = "absolute"; // Position as desired
+    prevBtn.style.left = "10px";
+    prevBtn.style.top = "50%";
+
+    var nextBtn = document.createElement("button");
+    nextBtn.innerText = "Next";
+    nextBtn.style.position = "absolute"; // Position as desired
+    nextBtn.style.right = "10px";
+    nextBtn.style.top = "50%";
+
+    // Append the buttons to the carousel container
+    carousel.appendChild(prevBtn);
+    carousel.appendChild(nextBtn);
+
+    // Add event listeners
+
+	</script>
 
 	  
 
